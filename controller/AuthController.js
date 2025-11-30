@@ -2,9 +2,9 @@ const User = require("../models/user");
 const { createToken } = require("../services/service");
 const registerController = async (req, res) => {
   try {
-    const { Username, email, password, phone, address } = req.body;
+    const { Username, email, password, phone, address,answer } = req.body;
 
-    if (!Username || !email || !password || !phone || !address) {
+    if (!Username || !email || !password || !phone || !address || !answer) {
       return res.status(500).send({
         success: false,
         message: "Please provide all required fields",
@@ -24,6 +24,7 @@ const registerController = async (req, res) => {
       password,
       phoneNumber: phone,
       address,
+      answer,
     });
     res.status(201).send({
       success: true,
