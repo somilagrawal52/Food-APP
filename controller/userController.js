@@ -123,7 +123,11 @@ const updatePassword=async (req,res) => {
 
 const deleteProfile=async (req,res) => {
    try {
-    
+    await User.findByIdAndDelete(req.params.id);
+    res.status(200).send({
+      success: true,
+      message: "Profile deleted successfully",
+    });
    } catch (error) {
     console.log(error);
     res.status(500).send({
