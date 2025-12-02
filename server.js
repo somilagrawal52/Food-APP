@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const userRoutes = require("./routes/userRoutes");
+const CategoryRoutes = require("./routes/CategoryRoutes");
 const resturantRoutes = require("./routes/resturantRoutes");
 const { connectDB } = require("./config/database");
 const authRoutes = require("./routes/AuthRoutes");
@@ -22,6 +23,7 @@ app.use(morgan("dev"));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/resturant", resturantRoutes);
+app.use("/api/v1/category", CategoryRoutes);
 
 //route
 app.get("/", (req, res) => {
