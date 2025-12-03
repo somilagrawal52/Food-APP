@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const userRoutes = require("./routes/userRoutes");
 const CategoryRoutes = require("./routes/CategoryRoutes");
 const resturantRoutes = require("./routes/resturantRoutes");
+const FoodRoutes = require("./routes/FoodRoutes");
 const { connectDB } = require("./config/database");
 const authRoutes = require("./routes/AuthRoutes");
 
@@ -24,6 +25,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/resturant", resturantRoutes);
 app.use("/api/v1/category", CategoryRoutes);
+app.use("/api/v1/food", FoodRoutes);
 
 //route
 app.get("/", (req, res) => {
