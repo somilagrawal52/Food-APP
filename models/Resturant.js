@@ -56,29 +56,6 @@ const resturantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-resturantSchema.pre("save", async function (next) {
-  const resturant = this;
-  if (!resturant.isModified("password")) {
-    return next();
-  }
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(resturant.password, salt);
-  resturant.password = hashedPassword;
-  next();
-});
-
-resturantSchema.statics.matchpassword = async function (email, password) {
-  const resturant = await this.findOne({ email });
-  if (!resturant) {
-    throw new Error("User not found");
-  }
-  const isMatch = await bcrypt.compare(password, resturant.password);
-  if (!isMatch) {
-    throw new Error("Invalid password");
-  }
-  return resturant;
-};
-
 const Resturant = mongoose.model("Resturant", resturantSchema);
 
 module.exports = Resturant;
