@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Food = require("../models/Food");
 const { checkforauth } = require("../middleware/authMiddleware");
+const { checkforadmin } = require("../middleware/adminMiddleware");
 const {
   createFood,
   getAllFoods,
@@ -10,6 +11,7 @@ const {
   updateFood,
   deleteFood,
   placeOrder,
+  changeOrderStatus,
 } = require("../controller/Food");
 
 router.post("/createfood", checkforauth, createFood);
@@ -19,5 +21,6 @@ router.get("/foodByResturant/:id", checkforauth, getFoodByResturant);
 router.put("/updatefood/:id", checkforauth, updateFood);
 router.delete("/deletefood/:id", checkforauth, deleteFood);
 router.post("/placeorder", checkforauth, placeOrder);
+router.post("/orderStatus/:id", checkforadmin, changeOrderStatus);
 
 module.exports = router;

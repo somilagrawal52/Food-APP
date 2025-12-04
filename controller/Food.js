@@ -230,6 +230,29 @@ const placeOrder = async (req, res) => {
   }
 };
 
+const changeOrderStatus = async (req, res) => {
+  try {
+    const {status} = req.body;
+    const order=await Order.findByIdAndUpdate(
+      req.params.id,
+      {status},
+      {new: true}
+    );
+    res.status(200).send({
+      success: true,
+      message: "Order status updated successfully",
+      order,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in changing order status",
+      error,
+    });
+  }
+}
+
 module.exports = {
   createFood,
   getAllFoods,
