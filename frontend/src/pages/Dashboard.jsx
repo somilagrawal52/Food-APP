@@ -8,34 +8,37 @@ function Dashboard() {
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [editingFood, setEditingFood] = useState(null);
   const [editingRestaurant, setEditingRestaurant] = useState(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
   const [activeTab, setActiveTab] = useState("restaurants"); // restaurants | foods | orders
 
   const navigate = useNavigate();
   const auth = getAuth();
-  const isVendor = auth?.user?.userType === "vendor";
   const isAdmin = auth?.user?.userType === "admin";
 
   const loadData = async () => {
     try {
-      const [resData, catData, foodData, orderData] = await Promise.all([
+      const [resData, catData, foodData, orderData, userData] = await Promise.all([
         api(isAdmin ? "/resturant/getallresturants" : "/resturant/myresturants"),
         api("/category/getallcategories"),
         api("/food/getallfoods"),
-        api(isAdmin ? "/food/orders/all" : "/food/orders/vendor")
+        api(isAdmin ? "/food/orders/all" : "/food/orders/vendor"),
+        api("/user/getuser")
       ]);
       setMyRestaurants(resData.resturants || []);
       setCategories(catData.categories || []);
       setFoods(foodData.foods || []);
       setOrders(orderData.orders || []);
+      setCurrentUser(userData.user);
     } catch (error) {
       showToast("Error loading dashboard data");
     }
   };
 
   useEffect(() => {
-    if (!auth?.token || (!isVendor && !isAdmin)) {
+    if (!auth?.token) {
       navigate("/auth");
       return;
     }
@@ -44,11 +47,12 @@ function Dashboard() {
 
   const handleRestaurantSubmit = async (event) => {
     event.preventDefault();
-    const form = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const formData = new FormData(event.currentTarget);
+    const form = Object.fromEntries(formData.entries());
     const payload = {
       ...form,
-      delivery: form.delivery === "true",
-      pickup: form.pickup === "true",
+      delivery: formData.get("delivery") === "true",
+      pickup: formData.get("pickup") === "true",
       isOpen: form.isOpen === "true",
       coords: { address: form.address, lat: 0, lng: 0, title: form.title }
     };
@@ -57,11 +61,13 @@ function Dashboard() {
     try {
       if (editingRestaurant?._id) {
         await api(`/resturant/resturant/${editingRestaurant._id}`, { method: "PUT", body: JSON.stringify(payload) });
-        showToast("Restaurant updated");
+        showToast("Restaurant details updated successfully");
         setEditingRestaurant(null);
       } else {
         await api("/resturant/createresturant", { method: "POST", body: JSON.stringify(payload) });
-        showToast("Restaurant created");
+        showToast("Restaurant registered successfully! Default password for new owner: vendorpass123");
+        setIsAddingNew(false);
+        setActiveTab("foods");
       }
       event.currentTarget.reset();
       loadData();
@@ -134,54 +140,110 @@ function Dashboard() {
       </div>
 
       {activeTab === 'restaurants' && (
-        <section className="section grid-1-2">
-          <article className="card">
-            <div className="card-body">
-              <div className="form-header">
-                <h2>{editingRestaurant ? "Edit Kitchen" : "Register Kitchen"}</h2>
+        <section className="section stack">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+            <h2>Your Kitchens</h2>
+            {!isAddingNew && !editingRestaurant && (
+              <button className="btn primary-btn" onClick={() => setIsAddingNew(true)}>+ Register New Kitchen</button>
+            )}
+          </div>
+
+          {(isAddingNew || editingRestaurant) && (
+            <article className="card" style={{ marginBottom: 'var(--space-xl)', border: '1px solid var(--color-primary-faint)' }}>
+              <div className="card-body">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-lg)' }}>
+                  <h2>{editingRestaurant ? `Edit: ${editingRestaurant.title}` : "Register New Kitchen"}</h2>
+                  <button className="btn-text-only" onClick={() => { setIsAddingNew(false); setEditingRestaurant(null); }}>✕ Close</button>
+                </div>
+                
+                <form key={editingRestaurant?._id || "new-res"} className="stack-form" onSubmit={handleRestaurantSubmit}>
+                  <div className="grid-1-2" style={{ gap: 'var(--space-xl)' }}>
+                    <div className="stack">
+                      <div className="eyebrow" style={{ marginBottom: '10px' }}>Owner Details</div>
+                      <div className="form-group">
+                        <label className="form-label">Owner Email</label>
+                        <input name="ownerEmail" type="email" placeholder="New owner's email" required={!editingRestaurant} defaultValue={editingRestaurant ? "" : ""} />
+                        {!editingRestaurant && <p className="muted text-xs" style={{ marginTop: '5px' }}>New accounts will be created with password: <strong>vendorpass123</strong></p>}
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Full Name</label>
+                        <input name="ownerName" placeholder="Owner's Name" required={!editingRestaurant} defaultValue={editingRestaurant ? "" : ""} />
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label className="form-label">Phone</label>
+                          <input name="ownerPhone" placeholder="Contact number" required={!editingRestaurant} defaultValue={editingRestaurant ? "" : ""} />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Personal Address</label>
+                          <input name="ownerAddress" placeholder="Owner's residence" required={!editingRestaurant} defaultValue={editingRestaurant ? "" : ""} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="stack">
+                      <div className="eyebrow" style={{ marginBottom: '10px' }}>Restaurant Details</div>
+                      <div className="form-group">
+                        <label className="form-label">Restaurant Name</label>
+                        <input name="title" placeholder="e.g. The Gourmet Hub" required defaultValue={editingRestaurant?.title || ""} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Business Address</label>
+                        <input name="address" placeholder="123 Street Name, City" required defaultValue={editingRestaurant?.coords?.address || ""} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-row" style={{ marginTop: '20px' }}>
+                    <div className="form-group">
+                      <label className="form-label">Branding (Logo/Cover URL)</label>
+                      <input name="imageURL" placeholder="https://images.unsplash.com/..." defaultValue={editingRestaurant?.imageURL || ""} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Status</label>
+                      <select className="select" name="isOpen" defaultValue={String(editingRestaurant?.isOpen ?? true)}>
+                        <option value="true">Open for Business</option>
+                        <option value="false">Closed Temporarily</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+                    <button className="btn primary-btn btn-lg" type="submit" style={{ flex: 1 }}>
+                      {editingRestaurant ? "Update Details" : "Register & Create Vendor"}
+                    </button>
+                    <button className="btn ghost-btn btn-lg" type="button" onClick={() => { setIsAddingNew(false); setEditingRestaurant(null); }}>Cancel</button>
+                  </div>
+                </form>
               </div>
-              <form key={editingRestaurant?._id || "new-res"} className="stack-form" onSubmit={handleRestaurantSubmit}>
-                <div className="form-group">
-                  <label className="form-label">Restaurant Title</label>
-                  <input name="title" placeholder="e.g. The Gourmet Hub" required defaultValue={editingRestaurant?.title || ""} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Full Address</label>
-                  <input name="address" placeholder="123 Street Name" required defaultValue={editingRestaurant?.coords?.address || ""} />
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Status</label>
-                    <select className="select" name="isOpen" defaultValue={String(editingRestaurant?.isOpen ?? true)}>
-                      <option value="true">Open</option><option value="false">Closed</option>
-                    </select>
+            </article>
+          )}
+
+          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+            {myRestaurants.length === 0 && !isAddingNew ? (
+              <div className="card card-body text-center muted" style={{ gridColumn: '1/-1', padding: '40px' }}>
+                You haven't registered any kitchens yet.
+              </div>
+            ) : (
+              myRestaurants.map(r => (
+                <article className="card" key={r._id}>
+                  {r.imageURL && <img src={r.imageURL} alt={r.title} style={{ width: '100%', height: '140px', objectFit: 'cover', borderTopLeftRadius: 'var(--radius-lg)', borderTopRightRadius: 'var(--radius-lg)' }} />}
+                  <div className="card-body">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <h3>{r.title}</h3>
+                        <p className="muted text-sm" style={{ marginBottom: '10px' }}>{r.coords?.address}</p>
+                        <span className={`pill ${r.isOpen ? 'success-pill' : 'error-pill'}`}>{r.isOpen ? 'Open' : 'Closed'}</span>
+                      </div>
+                    </div>
+                    <div className="stack" style={{ flexDirection: 'row', gap: '10px', marginTop: '20px' }}>
+                      <button className="btn ghost-btn btn-sm" style={{ flex: 1 }} onClick={() => { setEditingRestaurant(r); setIsAddingNew(false); window.scrollTo(0,0); }}>Edit</button>
+                      <button className="btn ghost-btn btn-sm" style={{ color: 'var(--color-error)' }} onClick={() => deleteItem(`/resturant/resturant/${r._id}`, "Deleted")}>Delete</button>
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Logo/Cover URL</label>
-                    <input name="imageURL" placeholder="https://..." defaultValue={editingRestaurant?.imageURL || ""} />
-                  </div>
-                </div>
-                <button className="btn primary-btn btn-lg" type="submit">{editingRestaurant ? "Update Kitchen" : "Create Kitchen"}</button>
-                {editingRestaurant && <button className="btn ghost-btn btn-lg" type="button" onClick={() => setEditingRestaurant(null)}>Cancel</button>}
-              </form>
-            </div>
-          </article>
-          <div className="stack">
-            {myRestaurants.map(r => (
-              <article className="card" key={r._id}>
-                <div className="card-body" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h3>{r.title}</h3>
-                    <p className="muted text-sm">{r.coords?.address}</p>
-                    <span className={`pill ${r.isOpen ? 'success-pill' : 'error-pill'}`}>{r.isOpen ? 'Open' : 'Closed'}</span>
-                  </div>
-                  <div className="stack" style={{ flexDirection: 'row', gap: '10px' }}>
-                    <button className="btn ghost-btn btn-sm" onClick={() => setEditingRestaurant(r)}>Edit</button>
-                    <button className="btn ghost-btn btn-sm" style={{ color: 'var(--color-error)' }} onClick={() => deleteItem(`/resturant/resturant/${r._id}`, "Deleted")}>Delete</button>
-                  </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))
+            )}
           </div>
         </section>
       )}

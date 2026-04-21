@@ -137,4 +137,37 @@ const deleteProfile=async (req,res) => {
     });
    }
 }
-module.exports = { getUserController, updateUserController, resetPassword, updatePassword, deleteProfile };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, { password: 0 });
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ success: false, message: "Error in fetching users" });
+  }
+};
+
+
+const updateUserRole = async (req, res) => {
+  try {
+    const { userId, userType } = req.body;
+    const user = await User.findByIdAndUpdate(userId, { userType }, { new: true });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, message: "User role updated", user });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ success: false, message: "Error in updating user role" });
+  }
+};
+
+module.exports = { 
+  getUserController, 
+  updateUserController, 
+  resetPassword, 
+  updatePassword, 
+  deleteProfile,
+  getAllUsers,
+  updateUserRole
+};

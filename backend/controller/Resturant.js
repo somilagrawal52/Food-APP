@@ -1,4 +1,5 @@
 const Resturant = require("../models/Resturant");
+const User = require("../models/user");
 
 const createResturant = async (req, res) => {
   try {
@@ -15,6 +16,10 @@ const createResturant = async (req, res) => {
       ratingCount,
       code,
       coords,
+      ownerName,
+      ownerEmail,
+      ownerPhone,
+      ownerAddress
     } = req.body;
 
     if (!title || !coords) {
@@ -23,6 +28,32 @@ const createResturant = async (req, res) => {
         message: "Title and coordinates are required",
       });
     }
+
+    let ownerId = req.user._id;
+
+    // If ownerEmail is provided, create a new user (account for the vendor)
+    if (ownerEmail) {
+      let user = await User.findOne({ email: ownerEmail });
+      if (!user) {
+        // Create new vendor account with default credentials
+        user = new User({
+          Username: ownerName || "Vendor Owner",
+          email: ownerEmail,
+          password: "vendorpass123", // Default password for initial login
+          phoneNumber: ownerPhone || "0000000000",
+          address: [ownerAddress || "Restaurant Address"],
+          userType: "vendor",
+          answer: "vendor" // Default answer for password reset
+        });
+        await user.save();
+      } else if (user.userType !== "vendor" && user.userType !== "admin") {
+          // If user exists but is not a vendor/admin, make them a vendor
+          user.userType = "vendor";
+          await user.save();
+      }
+      ownerId = user._id;
+    }
+
     const newResturant = new Resturant({
       title,
       imageURL,
@@ -36,12 +67,15 @@ const createResturant = async (req, res) => {
       ratingCount,
       code,
       coords,
-      owner: req.user._id,
+      owner: ownerId,
     });
     await newResturant.save();
+    
     res.status(201).send({
       success: true,
-      message: "Resturant created successfully",
+      message: ownerEmail 
+        ? "Restaurant and new vendor account created successfully. Default password: vendorpass123" 
+        : "Restaurant created successfully",
       resturant: newResturant,
     });
   } catch (error) {
