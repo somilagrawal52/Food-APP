@@ -5,6 +5,7 @@ import { showToast } from "../lib/utils";
 
 function Auth() {
   const [view, setView] = useState("login"); // 'login' | 'register' | 'reset'
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const submitLogin = async (event) => {
@@ -73,7 +74,12 @@ function Auth() {
                   </div>
                   <div className="form-group">
                     <label className="form-label">Security Password</label>
-                    <input name="password" type="password" placeholder="••••••••" required />
+                    <div className="password-wrapper">
+                      <input name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+                      <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? "👁️" : "🙈"}
+                      </button>
+                    </div>
                   </div>
                   <button className="btn primary-btn btn-lg" style={{ marginTop: "var(--space-xs)" }} type="submit">Access Account</button>
                   
@@ -121,7 +127,12 @@ function Auth() {
                     </div>
                     <div className="form-group">
                       <label className="form-label">Password</label>
-                      <input name="password" type="password" placeholder="••••••••" required />
+                      <div className="password-wrapper">
+                        <input name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+                        <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                          {showPassword ? "👁️" : "🙈"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <button className="btn primary-btn btn-lg" style={{ marginTop: "var(--space-xs)" }} type="submit">Establish Membership</button>
@@ -152,7 +163,12 @@ function Auth() {
                     </div>
                     <div className="form-group">
                       <label className="form-label">New Password</label>
-                      <input name="newPassword" type="password" placeholder="••••••••" required />
+                      <div className="password-wrapper">
+                        <input name="newPassword" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+                        <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                          {showPassword ? "👁️" : "🙈"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <button className="btn primary-btn btn-lg" style={{ marginTop: "var(--space-xs)" }} type="submit">Update Security Key</button>

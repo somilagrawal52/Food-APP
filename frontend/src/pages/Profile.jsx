@@ -5,6 +5,7 @@ import { showToast } from "../lib/utils";
 
 function Profile() {
   const [user, setUser] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
@@ -199,11 +200,21 @@ function Profile() {
             <form className="stack-form" onSubmit={updatePassword}>
               <div className="form-group">
                 <label className="form-label">Current Security Password</label>
-                <input name="oldPassword" type="password" placeholder="••••••••" />
+                <div className="password-wrapper">
+                  <input name="oldPassword" type={showPassword ? "text" : "password"} placeholder="••••••••" />
+                  <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? "👁️" : "🙈"}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label className="form-label">New Password</label>
-                <input name="newPassword" type="password" placeholder="••••••••" />
+                <div className="password-wrapper">
+                  <input name="newPassword" type={showPassword ? "text" : "password"} placeholder="••••••••" />
+                  <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? "👁️" : "🙈"}
+                  </button>
+                </div>
               </div>
               <button className="btn primary-btn btn-lg" style={{ marginTop: "var(--space-xs)" }} type="submit">Update Password</button>
             </form>

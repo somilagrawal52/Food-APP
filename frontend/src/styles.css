@@ -652,10 +652,40 @@ button {
   gap: var(--space-md);
 }
 
-.form-group {
+.password-wrapper {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+}
+
+.password-wrapper input {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 8px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+
+.password-toggle:hover {
+  color: var(--color-accent);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
 }
 
 .form-label {

@@ -151,8 +151,17 @@ const updateFood = async (req, res) => {
     }
 
     // Check ownership
-    const resturant = await Resturant.findById(food.Resturants);
-    if (resturant.owner.toString() !== req.user._id.toString() && req.user.userType !== 'admin') {
+    const resturant = food.Resturants;
+    if (!resturant) {
+        return res.status(404).send({ success: false, message: "Restaurant not found for this food" });
+    }
+    
+    const ownerId = resturant.owner ? resturant.owner.toString() : null;
+    if (!ownerId) {
+        return res.status(500).send({ success: false, message: "Restaurant owner not found" });
+    }
+
+    if (ownerId !== req.user._id.toString() && req.user.userType !== 'admin') {
         return res.status(401).send({ success: false, message: "Unauthorized to update this food" });
     }
 
@@ -215,7 +224,11 @@ const deleteFood = async (req, res) => {
 
     // Check ownership
     const resturant = await Resturant.findById(food.Resturants);
-    if (resturant.owner.toString() !== req.user._id.toString() && req.user.userType !== 'admin') {
+    if (!resturant) {
+        return res.status(404).send({ success: false, message: "Restaurant not found for this food" });
+    }
+    
+    if (resturant.owner && resturant.owner.toString() !== req.user._id.toString() && req.user.userType !== 'admin') {
         return res.status(401).send({ success: false, message: "Unauthorized to delete this food" });
     }
 
