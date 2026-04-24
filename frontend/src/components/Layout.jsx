@@ -8,21 +8,30 @@ export function Layout({ children }) {
   const [favoriteCount, setFavoriteCount] = useState(getFavorites().length);
   const [currentCartCount, setCurrentCartCount] = useState(cartCount());
   const navigate = useNavigate();
+  const isAdmin = auth?.user?.userType === "admin";
+  const isVendor = auth?.user?.userType === "vendor";
 
-  const links = [
+  let links = [
     { href: "/", label: "Home" },
     { href: "/menu", label: "Menu" },
     { href: "/restaurants", label: "Restaurants" },
     { href: "/orders", label: "Orders" },
-    { href: "/profile", label: "Profile" }
+    { href: "/profile", label: "Profile" },
+    { href: "/cart", label: "Cart" }
   ];
 
-  if (auth?.user?.userType === "vendor" || auth?.user?.userType === "admin") {
-    links.splice(4, 0, { href: "/dashboard", label: "Dashboard" });
-  }
-
-  if (auth?.user?.userType !== "admin") {
-    links.push({ href: "/cart", label: "Cart" });
+  if (isAdmin) {
+    links = [
+      { href: "/admin", label: "Admin Panel" },
+      { href: "/orders", label: "Orders" },
+      { href: "/profile", label: "Profile" }
+    ];
+  } else if (isVendor) {
+    links = [
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/orders", label: "Orders" },
+      { href: "/profile", label: "Profile" }
+    ];
   }
 
   useEffect(() => {
@@ -48,17 +57,15 @@ export function Layout({ children }) {
     navigate("/auth");
   };
 
-  const isAdmin = auth?.user?.userType === "admin";
-
   return (
     <div className="layout">
       <header className="topbar">
         <div className="shell">
-          <Link className="brand" to="/">
+          <Link className="brand" to={isAdmin ? "/admin" : isVendor ? "/dashboard" : "/"}>
             <span className="brand-mark">P</span>
             <div className="brand-copy">
               <strong>Plateful</strong>
-              <small>Fresh picks</small>
+              <small>{isAdmin ? "Admin" : isVendor ? "Vendor" : "Fresh picks"}</small>
             </div>
           </Link>
           <nav className="nav">
@@ -73,8 +80,8 @@ export function Layout({ children }) {
             ))}
           </nav>
           <div className="actions">
-            {!isAdmin && (
-              <Link className="btn ghost-btn nav-utility" to="/menu">
+            {!isAdmin && !isVendor && (
+              <Link className="btn ghost-btn nav-utility" to="/menu?saved=1">
                 Saved <span className="pill dark-pill">{favoriteCount}</span>
               </Link>
             )}
@@ -83,7 +90,7 @@ export function Layout({ children }) {
             ) : (
               <Link className="btn ghost-btn nav-utility" to="/auth">Login</Link>
             )}
-            {!isAdmin && (
+            {!isAdmin && !isVendor && (
               <Link className="btn primary-btn nav-cart-btn" to="/cart">
                 Cart <span className="pill">{currentCartCount}</span>
               </Link>
@@ -95,7 +102,7 @@ export function Layout({ children }) {
         {children}
       </main>
 
-      <footer className="footer">
+      {!isAdmin && !isVendor && <footer className="footer">
         <div className="shell">
           <div className="footer-grid">
             <div className="footer-brand">
@@ -106,45 +113,23 @@ export function Layout({ children }) {
                   <small>Culinary Excellence</small>
                 </div>
               </div>
-              <p className="muted">Redefining home dining with the finest local kitchens and a commitment to artisanal quality.</p>
+              <p className="muted">Simple food ordering for local restaurants.</p>
             </div>
             <div className="footer-links">
-              <h4>Discovery</h4>
+              <h4>Browse</h4>
               <ul>
                 <li><Link to="/menu">Full Menu</Link></li>
-                <li><Link to="/restaurants">Kitchens</Link></li>
-                <li><Link to="/menu?category=Dessert">Sweets</Link></li>
-                <li><Link to="/menu?category=Healthy">Healthy</Link></li>
-              </ul>
-            </div>
-            <div className="footer-links">
-              <h4>Company</h4>
-              <ul>
-                <li><Link to="/">About Us</Link></li>
-                <li><Link to="/">Artisans</Link></li>
-                <li><Link to="/">Careers</Link></li>
-                <li><Link to="/">Contact</Link></li>
-              </ul>
-            </div>
-            <div className="footer-links">
-              <h4>Legal</h4>
-              <ul>
-                <li><Link to="/">Privacy Policy</Link></li>
-                <li><Link to="/">Terms of Service</Link></li>
-                <li><Link to="/">Cookie Policy</Link></li>
+                <li><Link to="/restaurants">Restaurants</Link></li>
+                <li><Link to="/orders">Track Orders</Link></li>
+                <li><Link to="/cart">Checkout</Link></li>
               </ul>
             </div>
           </div>
           <div className="footer-bottom">
             <p>&copy; 2026 Plateful Technologies. All rights reserved.</p>
-            <div className="stack" style={{ flexDirection: "row", gap: "20px" }}>
-              <span>Instagram</span>
-              <span>Twitter</span>
-              <span>LinkedIn</span>
-            </div>
           </div>
         </div>
-      </footer>
+      </footer>}
 
       <div id="toast" className="toast hidden"></div>
     </div>

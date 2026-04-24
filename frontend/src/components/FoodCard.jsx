@@ -7,6 +7,7 @@ import { showToast } from "../lib/utils";
 export function FoodCard({ food }) {
   const [favorite, setFavorite] = useState(isFavorite(food._id));
   const eta = 18 + (food.title?.length || 0) % 15;
+  const restaurantTitle = food.Resturants?.title || food.restaurantTitle || "Popular kitchen";
 
   useEffect(() => {
     const sync = () => setFavorite(isFavorite(food._id));
@@ -53,9 +54,12 @@ export function FoodCard({ food }) {
         <p className="muted text-clamp-2">{food.description}</p>
         
         <div className="card-footer-meta">
-          <div className="restaurant-mini-ref">
-            <div className="dot-indicator"></div>
-            <span>{food.Resturants?.title || "Signature Dish"}</span>
+          <div className="card-meta-row">
+            <div className="restaurant-mini-ref">
+              <div className="dot-indicator"></div>
+              <span>{restaurantTitle}</span>
+            </div>
+            <span className="muted">{eta} min</span>
           </div>
         </div>
 

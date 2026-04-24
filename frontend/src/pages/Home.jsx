@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
-import { getFavorites, getRecentFoods } from "../lib/store";
+import { getFavorites } from "../lib/store";
 import { Hero } from "../components/Hero";
 import { CategoryGrid } from "../components/CategoryGrid";
 import { RestaurantCard } from "../components/RestaurantCard";
@@ -10,7 +10,10 @@ import { FoodCard } from "../components/FoodCard";
 function Home() {
   const [data, setData] = useState({ foods: [], categories: [], restaurants: [] });
   const [favorites, setFavorites] = useState(getFavorites());
-  const [recentFoods, setRecentFoods] = useState(getRecentFoods());
+  const openRestaurants = data.restaurants.filter((restaurant) => restaurant.isOpen);
+  const featuredRestaurants = (openRestaurants.length ? openRestaurants : data.restaurants).slice(0, 6);
+  const trendingFoods = data.foods.slice(0, 6);
+  const curatedCategories = data.categories.slice(0, 6);
 
   useEffect(() => {
     Promise.all([
@@ -25,10 +28,7 @@ function Home() {
       });
     });
 
-    const sync = () => {
-      setFavorites(getFavorites());
-      setRecentFoods(getRecentFoods());
-    };
+    const sync = () => setFavorites(getFavorites());
     window.addEventListener("plateful:storage", sync);
     return () => window.removeEventListener("plateful:storage", sync);
   }, []);
@@ -43,53 +43,54 @@ function Home() {
       />
       <section className="section mini-stats">
         <article className="mini-stat">
-          <span className="muted">Featured kitchens</span>
-          <strong>{data.restaurants.filter((restaurant) => restaurant.isOpen).length || data.restaurants.length}</strong>
+          <span className="muted">Open now</span>
+          <strong>{openRestaurants.length || data.restaurants.length}</strong>
         </article>
         <article className="mini-stat">
-          <span className="muted">Favorite dishes</span>
+          <span className="muted">Saved dishes</span>
           <strong>{favorites.length}</strong>
         </article>
         <article className="mini-stat">
-          <span className="muted">Recently viewed</span>
-          <strong>{recentFoods.length}</strong>
+          <span className="muted">Menu variety</span>
+          <strong>{data.foods.length}</strong>
         </article>
-      </section>
-      <section className="section">
-        <div className="section-head"><div><h2>Categories</h2><p className="muted">Jump into the menu by craving.</p></div></div>
-        <CategoryGrid categories={data.categories.slice(0, 6)} />
       </section>
       
       <section className="section stack-xl">
         <div className="section-head">
           <div className="stack">
             <div className="eyebrow">Discover</div>
-            <h2>Kitchens of Distinction</h2>
-            <p className="muted">Explore top-rated restaurants with hand-picked menus.</p>
+            <h2>Restaurants to order from now</h2>
+            <p className="muted">A shorter, clearer shortlist of places with strong menus and better delivery expectations.</p>
           </div>
-          <Link className="btn ghost-btn" to="/restaurants">See all kitchens</Link>
+          <Link className="btn ghost-btn" to="/restaurants">Browse all</Link>
         </div>
         <div className="grid restaurant-grid">
-          {data.restaurants.slice(0, 6).map((restaurant) => <RestaurantCard key={restaurant._id} restaurant={restaurant} />)}
+          {featuredRestaurants.map((restaurant) => <RestaurantCard key={restaurant._id} restaurant={restaurant} />)}
         </div>
       </section>
 
       <section className="section stack-xl">
         <div className="section-head">
           <div className="stack">
-            <div className="eyebrow">Signature Dishes</div>
-            <h2>Popular with locals</h2>
-            <p className="muted">The most requested culinary creations in your area.</p>
+            <div className="eyebrow">Trending</div>
+            <h2>Popular dishes this week</h2>
+            <p className="muted">Quick picks for lunch, dinner, and everything in between.</p>
           </div>
           <Link className="btn ghost-btn" to="/menu">Full menu</Link>
         </div>
         <div className="grid food-grid">
-          {data.foods.slice(0, 6).map((food) => <FoodCard key={food._id} food={food} />)}
+          {trendingFoods.map((food) => <FoodCard key={food._id} food={food} />)}
         </div>
       </section>
 
       <section className="section">
-        <div className="section-head"><div><h2>Saved for later</h2><p className="muted">A lightweight favorite system makes repeat ordering easier.</p></div></div>
+        <div className="section-head"><div><h2>Browse by craving</h2><p className="muted">Pick the category that matches the meal you want right now.</p></div></div>
+        <CategoryGrid categories={curatedCategories} />
+      </section>
+
+      <section className="section">
+        <div className="section-head"><div><h2>Saved for later</h2><p className="muted">Quick access to dishes you want to order again.</p></div></div>
         <div className="grid food-grid">
           {favorites.length ? favorites.slice(0, 3).map((food) => <FoodCard key={food._id} food={food} />) : <div className="empty">Tap the heart on any dish to save it here.</div>}
         </div>

@@ -12,9 +12,9 @@ export function CategoryGrid({ categories = [] }) {
           </div>
           <div className="card-body">
             <h3>{category.title}</h3>
-            <p className="muted">Exquisite {category.title.toLowerCase()} selections.</p>
+            <p className="muted">Browse {category.title.toLowerCase()} dishes, quick meals, and repeat-order favorites.</p>
             <div className="card-actions" style={{ gridTemplateColumns: "1fr" }}>
-              <Link className="btn primary-btn" to={`/menu?category=${encodeURIComponent(category.title)}`}>Explore</Link>
+              <Link className="btn primary-btn" to={`/menu?category=${encodeURIComponent(category.title)}`}>Browse</Link>
             </div>
           </div>
         </article>

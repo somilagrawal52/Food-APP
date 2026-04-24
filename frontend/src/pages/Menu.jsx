@@ -10,7 +10,7 @@ function Menu() {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [showSavedOnly, setShowSavedOnly] = useState(searchParams.get("saved") === "1");
   const [sortBy, setSortBy] = useState("recommended");
   const [favorites, setFavorites] = useState(getFavorites());
 
@@ -24,6 +24,14 @@ function Menu() {
   }, []);
 
   const favoriteIds = useMemo(() => new Set(favorites.map((food) => food._id)), [favorites]);
+
+  useEffect(() => {
+    const next = {};
+    if (search) next.search = search;
+    if (selectedCategory) next.category = selectedCategory;
+    if (showSavedOnly) next.saved = "1";
+    setSearchParams(next, { replace: true });
+  }, [search, selectedCategory, setSearchParams, showSavedOnly]);
 
   const filteredFoods = useMemo(() => {
     const result = foods.filter((food) => {
@@ -43,18 +51,18 @@ function Menu() {
 
   return (
     <section className="section stack-lg">
-      <div className="eyebrow">Discovery</div>
-      <h1>Explore Full Menu</h1>
-      <p className="muted">Search across {categories.length} culinary lanes and refine your selection with precision filters.</p>
+      <div className="eyebrow">Menu</div>
+      <h1>Find the right dish faster</h1>
+      <p className="muted">Search across {categories.length} categories and filter by what you want to eat.</p>
       
-      <div className="searchbar stack-lg">
+      <div className="searchbar stack-lg menu-toolbar">
         <div className="search-row">
           <input 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            placeholder="Search for dishes, ingredients, or flavors..." 
+            placeholder="Search dishes, ingredients, or restaurant names..." 
           />
-          <select className="btn ghost-btn" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="recommended">Sort: Recommended</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
@@ -67,10 +75,10 @@ function Menu() {
             Saved only
           </button>
         </div>
-        <div className="chip-row stack" style={{ gap: "12px" }}>
-          <div className="muted font-medium">Cuisine lanes:</div>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            <button className={`btn ${!selectedCategory ? "primary-btn" : "ghost-btn"}`} onClick={() => setSelectedCategory("")}>All Lanes</button>
+        <div className="chip-row stack menu-filter-row" style={{ gap: "12px" }}>
+          <div className="muted">Browse by category</div>
+          <div className="filter-chip-wrap">
+            <button className={`btn ${!selectedCategory ? "primary-btn" : "ghost-btn"}`} onClick={() => setSelectedCategory("")}>All</button>
             {categories.map((category) => (
               <button 
                 key={category._id} 
@@ -82,10 +90,6 @@ function Menu() {
             ))}
           </div>
         </div>
-        <div className="promo-row" style={{ display: "flex", gap: "12px" }}>
-          <span className="tag">{filteredFoods.length} Creations Found</span>
-          <span className="tag">{favorites.length} Saved in Vault</span>
-        </div>
       </div>
 
       <div className="grid food-grid" style={{ marginTop: "var(--space-xl)" }}>
@@ -93,8 +97,8 @@ function Menu() {
           filteredFoods.map((food) => <FoodCard key={food._id} food={food} />)
         ) : (
           <div className="empty">
-            <h3>No culinary matches</h3>
-            <p>Try adjusting your search terms or exploring other cuisine lanes.</p>
+            <h3>No dishes found</h3>
+            <p>Try another search or clear the current filters.</p>
           </div>
         )}
       </div>

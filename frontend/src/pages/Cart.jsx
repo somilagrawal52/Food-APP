@@ -45,8 +45,8 @@ function Cart() {
     <>
       <section className="section stack-lg">
         <div className="eyebrow">Checkout</div>
-        <h1>Your Selection</h1>
-        <p className="muted">Refine your order before we transmit it to the kitchen.</p>
+        <h1>Review your order</h1>
+        <p className="muted">Check quantities, fees, and delivery details before placing the order.</p>
       </section>
       <section className="section cart-grid">
         <CartList onRefresh={refreshCart} />
@@ -59,12 +59,12 @@ function Cart() {
             {discount > 0 && <div className="checkout-line" style={{ color: "var(--color-success)" }}><span>Loyalty Discount</span><strong>- {currency(discount)}</strong></div>}
             <div className="checkout-line total"><span>Total Payable</span><strong>{currency(payable)}</strong></div>
           </div>
-          <div className="promo-row">
-            <span className="tag" style={{ width: "100%", textAlign: "center", padding: "12px" }}>
-              {total >= 500 ? "Elite Reward Applied" : `Add ${currency(500 - total)} more for discount`}
-            </span>
+          <div className="checkout-note">
+            <strong>{total >= 500 ? "Discount unlocked" : `Add ${currency(500 - total)} more to unlock savings`}</strong>
+            <p className="muted">Delivery fee and service charge are shown clearly before payment.</p>
           </div>
           <button className="btn primary-btn" style={{ width: "100%" }} type="button" onClick={placeOrder} disabled={!cart.length}>Confirm Order</button>
+          <Link className="btn ghost-btn" style={{ width: "100%" }} to="/menu">Add more items</Link>
         </aside>
       </section>
     </>

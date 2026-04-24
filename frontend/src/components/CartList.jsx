@@ -4,7 +4,7 @@ import { currency, fallbackImage } from "../lib/format";
 
 export function CartList({ onRefresh } = {}) {
   const items = getCart();
-  if (!items.length) return <div className="empty">Your cart is empty. Begin your culinary journey.</div>;
+  if (!items.length) return <div className="empty">Your cart is empty. Add dishes from the menu to start an order.</div>;
 
   const refresh = () => {
     if (onRefresh) onRefresh();
@@ -17,16 +17,20 @@ export function CartList({ onRefresh } = {}) {
       {items.map((item) => (
         <div className="cart-item" key={item._id}>
           <img src={item.imageURL || fallbackImage(item.title)} alt={item.title} />
-          <div>
+          <div className="cart-item-body">
             <div className="between">
               <h3>{item.title}</h3>
               <button className="btn ghost-btn" style={{ padding: "8px 12px" }} type="button" onClick={() => { removeCartItem(item._id); refresh(); }}>Remove</button>
             </div>
-            <p className="muted">{currency(item.price)}</p>
+            <p className="muted">{currency(item.price)} each</p>
             <div className="qty-row">
               <button className="qty-btn" type="button" onClick={() => { updateCartItem(item._id, -1); refresh(); }}>-</button>
               <strong>{item.quantity}</strong>
               <button className="qty-btn" type="button" onClick={() => { updateCartItem(item._id, 1); refresh(); }}>+</button>
+            </div>
+            <div className="cart-item-total">
+              <span className="muted">Line total</span>
+              <strong>{currency(item.price * item.quantity)}</strong>
             </div>
           </div>
         </div>

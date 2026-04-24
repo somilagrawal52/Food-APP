@@ -12,9 +12,9 @@ function Restaurants() {
   return (
     <>
       <section className="section stack-lg">
-        <div className="eyebrow">Explore</div>
-        <h1>Kitchens of Distinction</h1>
-        <p className="muted">Experience fine dining from the comfort of your home. Discover {restaurants.length} signature kitchens available today.</p>
+        <div className="eyebrow">Restaurants</div>
+        <h1>Choose a restaurant with confidence</h1>
+        <p className="muted">Compare {restaurants.length} local spots by availability, delivery model, and speed before you commit to a cart.</p>
       </section>
       <section className="section">
         <div className="grid restaurant-grid">
@@ -22,8 +22,8 @@ function Restaurants() {
         </div>
         {!restaurants.length && (
           <div className="empty">
-            <h3>No kitchens available</h3>
-            <p>We are expanding our network. Check back soon for new gourmet options.</p>
+            <h3>No restaurants available</h3>
+            <p>The list is empty right now. Add restaurant data in the backend and they will appear here.</p>
           </div>
         )}
       </section>
