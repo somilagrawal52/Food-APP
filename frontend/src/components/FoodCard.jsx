@@ -7,7 +7,10 @@ import { showToast } from "../lib/utils";
 export function FoodCard({ food }) {
   const [favorite, setFavorite] = useState(isFavorite(food._id));
   const eta = 18 + (food.title?.length || 0) % 15;
-  const restaurantTitle = food.Resturants?.title || food.restaurantTitle || "Popular kitchen";
+  const restaurantTitle = food.Resturants?.title || food.restaurantTitle || "Artisan Kitchen";
+
+  // Parse highlighted tags
+  const firstTag = food.foodtags ? food.foodtags.split(",")[0].trim() : null;
 
   useEffect(() => {
     const sync = () => setFavorite(isFavorite(food._id));
@@ -23,18 +26,26 @@ export function FoodCard({ food }) {
   const toggle = (e) => {
     e.preventDefault();
     const next = toggleFavorite(food);
-    showToast(next ? "Added to favorites" : "Removed from favorites", "info");
+    showToast(next ? "Saved to your tasting list" : "Removed from tasting list", "info");
   };
 
   return (
     <article className="card food-card-interactive">
       <div className="card-media">
-        <img src={food.imageURL || fallbackImage(food.title)} alt={food.title} />
+        <img
+          src={food.imageURL || fallbackImage(food.title)}
+          alt={food.title}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = fallbackImage(food.category || food.title);
+          }}
+        />
         <div className="card-overlay-actions">
           <button 
             className={`heart-btn ${favorite ? "is-favorite" : ""}`} 
             type="button" 
             onClick={toggle}
+            aria-label="Save to favorites"
           >
             <svg viewBox="0 0 24 24" fill={favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -42,6 +53,9 @@ export function FoodCard({ food }) {
           </button>
         </div>
         <div className="card-badge">{eta} min</div>
+        {firstTag && (
+          <div className="card-highlight-badge">{firstTag}</div>
+        )}
       </div>
       <div className="card-body">
         <div className="between" style={{ marginBottom: "var(--space-2xs)" }}>
@@ -57,14 +71,17 @@ export function FoodCard({ food }) {
               <div className="dot-indicator"></div>
               <span>{restaurantTitle}</span>
             </div>
-            <span className="muted">{eta} min</span>
+            <div className="rating-mini-badge">
+              <span>★</span>
+              <span>{Number(food.rating || 4.8).toFixed(1)}</span>
+            </div>
           </div>
         </div>
 
         <div className="card-actions-row">
           <Link className="btn-text-only" to={`/food/${food._id}`}>View Details</Link>
           <button className="btn primary-btn btn-sm-rounded" type="button" onClick={add}>
-            Add <span style={{ marginLeft: "4px", opacity: 0.7 }}>+</span>
+            Add <span style={{ marginLeft: "4px", opacity: 0.8 }}>+</span>
           </button>
         </div>
       </div>
