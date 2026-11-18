@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("./Resturant");
 
 const foodSchema = new mongoose.Schema(
   {
