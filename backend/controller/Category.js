@@ -4,15 +4,15 @@ const createcategory = async (req, res) => {
   try {
     const { title, imageURL } = req.body;
 
-    if (!title || !imageURL) {
-      return res.status(500).send({
+    if (!title) {
+      return res.status(400).send({
         success: false,
-        message: "Title and ImageURL are required",
+        message: "Category title is required",
       });
     }
     const newCategory = new Category({
       title,
-      imageURL,
+      imageURL: imageURL || "",
     });
     await newCategory.save();
     res.status(201).send({
@@ -25,7 +25,7 @@ const createcategory = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in creating category",
-      error,
+      error: error.message || error,
     });
   }
 };
@@ -43,15 +43,15 @@ const getAllCategories = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in fetching categories",
-      error,
+      error: error.message || error,
     });
   }
 };
 
 const getCategoryById = async (req, res) => {
   try {
-    const Category = await Category.findById(req.params.id);
-    if (!Category) {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
       return res.status(404).send({
         success: false,
         message: "Category not found",
@@ -60,14 +60,15 @@ const getCategoryById = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Category fetched successfully",
-      Category,
+      Category: category,
+      category,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
       message: "Error in fetching category by ID",
-      error,
+      error: error.message || error,
     });
   }
 };

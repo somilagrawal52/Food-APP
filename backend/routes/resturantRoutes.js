@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const Resturant = require("../models/Resturant");
 const { checkforauth } = require("../middleware/authMiddleware");
-const { checkforadmin } = require("../middleware/adminMiddleware");
 const { checkforvendor } = require("../middleware/vendorMiddleware");
 const {
   createResturant,

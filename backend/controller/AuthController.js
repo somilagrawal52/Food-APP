@@ -1,23 +1,32 @@
 const User = require("../models/user");
 const { createToken } = require("../services/service");
+
 const registerController = async (req, res) => {
   try {
     const { Username, email, password, phone, address, answer } = req.body;
 
     if (!Username || !email || !password || !phone || !address || !answer) {
-      return res.status(500).send({
+      return res.status(400).send({
         success: false,
         message: "Please provide all required fields",
       });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(200).send({
+    if (password.length < 6) {
+      return res.status(400).send({
         success: false,
-        message: "User already exists please login",
+        message: "Password must be at least 6 characters long",
       });
     }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).send({
+        success: false,
+        message: "User already exists with this email. Please login.",
+      });
+    }
+
     const newUser = await User.create({
       Username,
       email,
@@ -39,7 +48,7 @@ const registerController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in Register callback",
-      error,
+      error: error.message || error,
     });
   }
 };
@@ -49,12 +58,22 @@ const loginController = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(500).send({
+      return res.status(400).send({
         success: false,
-        message: "Please provide all required fields",
+        message: "Please provide email and password",
       });
     }
-    const user = await User.matchpassword(email, password);
+
+    let user;
+    try {
+      user = await User.matchpassword(email, password);
+    } catch (err) {
+      return res.status(401).send({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
     const token = createToken(user);
     const safeUser = user.toObject();
     delete safeUser.password;
@@ -70,7 +89,7 @@ const loginController = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in login callback",
-      error,
+      error: error.message || error,
     });
   }
 };

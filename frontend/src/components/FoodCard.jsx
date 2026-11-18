@@ -17,15 +17,13 @@ export function FoodCard({ food }) {
 
   const add = () => {
     addCartItem(food);
-    showToast(`${food.title} added to cart`);
-    window.dispatchEvent(new Event("plateful:storage"));
+    showToast(`${food.title} added to cart`, "success");
   };
 
   const toggle = (e) => {
     e.preventDefault();
     const next = toggleFavorite(food);
-    showToast(next ? "Added to favorites" : "Removed from favorites");
-    window.dispatchEvent(new Event("plateful:storage"));
+    showToast(next ? "Added to favorites" : "Removed from favorites", "info");
   };
 
   return (

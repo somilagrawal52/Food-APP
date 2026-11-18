@@ -15,9 +15,16 @@ function Auth() {
       const data = await api("/auth/login", { method: "POST", body: JSON.stringify(Object.fromEntries(form.entries())) });
       setAuth({ token: data.token, user: data.user });
       window.dispatchEvent(new Event("plateful:auth"));
-      navigate("/");
+      showToast(`Welcome back, ${data.user?.Username || "User"}!`, "success");
+      if (data.user?.userType === "admin") {
+        navigate("/admin");
+      } else if (data.user?.userType === "vendor") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
-      showToast(error.message);
+      showToast(error.message, "error");
     }
   };
 
@@ -27,10 +34,10 @@ function Auth() {
     form.address = [form.address];
     try {
       await api("/auth/register", { method: "POST", body: JSON.stringify(form) });
-      showToast("Account created. Please login.");
+      showToast("Account created successfully. Please login.", "success");
       setView("login");
     } catch (error) {
-      showToast(error.message);
+      showToast(error.message, "error");
     }
   };
 
@@ -39,10 +46,10 @@ function Auth() {
     const form = Object.fromEntries(new FormData(event.currentTarget).entries());
     try {
       await api("/user/resetpassword", { method: "POST", body: JSON.stringify(form) });
-      showToast("Password updated successfully");
+      showToast("Password updated successfully. Please login.", "success");
       setView("login");
     } catch (error) {
-      showToast(error.message);
+      showToast(error.message, "error");
     }
   };
 

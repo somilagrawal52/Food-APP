@@ -48,7 +48,15 @@ function Food() {
           </div>
 
           <div className="stack" style={{ gap: '12px' }}>
-            <button className="btn primary-btn" style={{ width: '100%' }} type="button" onClick={() => { addCartItem(food); showToast(`${food.title} added to cart`); window.dispatchEvent(new Event("plateful:storage")); }}>
+            <button
+              className="btn primary-btn"
+              style={{ width: '100%' }}
+              type="button"
+              onClick={() => {
+                addCartItem(food);
+                showToast(`${food.title} added to cart`, "success");
+              }}
+            >
               Add to Cart
             </button>
             <div className="between" style={{ gap: '12px' }}>
@@ -58,8 +66,7 @@ function Food() {
                 type="button"
                 onClick={() => {
                   const next = toggleFavorite(food);
-                  showToast(next ? `${food.title} saved` : `${food.title} removed`);
-                  window.dispatchEvent(new Event("plateful:storage"));
+                  showToast(next ? `${food.title} saved to favorites` : `${food.title} removed from favorites`, "info");
                 }}
               >
                 {isFavorite(food._id) ? "♥ Saved" : "♡ Save for Later"}

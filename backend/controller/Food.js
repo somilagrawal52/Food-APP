@@ -19,7 +19,7 @@ const createFood = async (req, res) => {
     } = req.body;
 
     if (!title || !description || !price || !category || !Resturants) {
-      return res.status(500).send({
+      return res.status(400).send({
         success: false,
         message: "All fields are required including Resturants",
       });
@@ -28,10 +28,10 @@ const createFood = async (req, res) => {
     // Check if user owns this restaurant
     const resturant = await Resturant.findById(Resturants);
     if (!resturant) {
-        return res.status(404).send({ success: false, message: "Resturant not found" });
+      return res.status(404).send({ success: false, message: "Restaurant not found" });
     }
-    if (resturant.owner.toString() !== req.user._id.toString() && req.user.userType !== 'admin') {
-        return res.status(401).send({ success: false, message: "Unauthorized to add food to this resturant" });
+    if (resturant.owner && resturant.owner.toString() !== req.user._id.toString() && req.user.userType !== 'admin') {
+      return res.status(403).send({ success: false, message: "Unauthorized to add food to this restaurant" });
     }
 
     const newFood = new Food({
@@ -391,8 +391,8 @@ const changeOrderStatus = async (req, res) => {
     // Check ownership if vendor
     if (req.user.userType === 'vendor') {
         const resturant = await Resturant.findById(order.resturant);
-        if (resturant.owner.toString() !== req.user._id.toString()) {
-            return res.status(401).send({ success: false, message: "Unauthorized to change status of this order" });
+        if (!resturant || !resturant.owner || resturant.owner.toString() !== req.user._id.toString()) {
+            return res.status(403).send({ success: false, message: "Unauthorized to change status of this order" });
         }
     }
 

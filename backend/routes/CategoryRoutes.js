@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const Category = require("../models/Category");
 const { checkforauth } = require("../middleware/authMiddleware");
+const { checkforadmin } = require("../middleware/adminMiddleware");
 const {
   createcategory,
   getAllCategories,
@@ -9,8 +9,6 @@ const {
   deleteCategory,
   UpdateCategory,
 } = require("../controller/Category");
-
-const { checkforadmin } = require("../middleware/adminMiddleware");
 
 router.post("/createcategory", checkforauth, checkforadmin, createcategory);
 router.get("/getallcategories", getAllCategories);

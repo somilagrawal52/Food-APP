@@ -8,8 +8,15 @@ import { showToast } from "../lib/utils";
 
 function Cart() {
   const [cart, setCartState] = useState(getCart());
+  const auth = getAuth();
+  const defaultAddress = Array.isArray(auth?.user?.address)
+    ? auth.user.address[0]
+    : auth?.user?.address || "";
+  const [deliveryAddress, setDeliveryAddress] = useState(defaultAddress);
+  const [orderNote, setOrderNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  
+
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const deliveryFee = cart.length ? 49 : 0;
@@ -20,24 +27,37 @@ function Cart() {
   const refreshCart = () => setCartState(getCart());
 
   const placeOrder = async () => {
-    const auth = getAuth();
-    if (!auth?.token) {
+    const currentAuth = getAuth();
+    if (!currentAuth?.token) {
+      showToast("Please log in to place your order", "error");
       navigate("/auth");
       return;
     }
+    if (!deliveryAddress.trim()) {
+      showToast("Please provide a delivery address", "error");
+      return;
+    }
+    setIsSubmitting(true);
     try {
+      const fullAddress = orderNote.trim()
+        ? `${deliveryAddress.trim()} (Instructions: ${orderNote.trim()})`
+        : deliveryAddress.trim();
+
       await api("/food/placeorder", {
         method: "POST",
         body: JSON.stringify({
           cart,
-          deliveryAddress: auth.user?.address?.[0] || auth.user?.address || ""
-        })
+          deliveryAddress: fullAddress,
+        }),
       });
       setCart([]);
       setCartState([]);
+      showToast("Order placed successfully!", "success");
       navigate("/orders");
     } catch (error) {
-      showToast(error.message);
+      showToast(error.message, "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,7 +83,38 @@ function Cart() {
             <strong>{total >= 500 ? "Discount unlocked" : `Add ${currency(500 - total)} more to unlock savings`}</strong>
             <p className="muted">Delivery fee and service charge are shown clearly before payment.</p>
           </div>
-          <button className="btn primary-btn" style={{ width: "100%" }} type="button" onClick={placeOrder} disabled={!cart.length}>Confirm Order</button>
+
+          <div className="stack" style={{ gap: "8px", margin: "var(--space-xs) 0" }}>
+            <label className="form-label" style={{ fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Delivery Destination
+            </label>
+            <input
+              type="text"
+              value={deliveryAddress}
+              onChange={(e) => setDeliveryAddress(e.target.value)}
+              placeholder="Delivery address (e.g. 124 Park Ave, Apt 4B)"
+              className="input"
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "var(--radius-sm)" }}
+            />
+            <input
+              type="text"
+              value={orderNote}
+              onChange={(e) => setOrderNote(e.target.value)}
+              placeholder="Notes for driver / kitchen (optional)"
+              className="input"
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "var(--radius-sm)" }}
+            />
+          </div>
+
+          <button
+            className="btn primary-btn"
+            style={{ width: "100%" }}
+            type="button"
+            onClick={placeOrder}
+            disabled={!cart.length || isSubmitting}
+          >
+            {isSubmitting ? "Placing Order..." : "Confirm & Place Order"}
+          </button>
           <Link className="btn ghost-btn" style={{ width: "100%" }} to="/menu">Add more items</Link>
         </aside>
       </section>

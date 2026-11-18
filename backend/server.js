@@ -1,9 +1,9 @@
-//config dotenv
-require("dotenv").config();
+const path = require("path");
+// config dotenv with explicit directory resolution
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const path = require("path");
 const userRoutes = require("./routes/userRoutes");
 const CategoryRoutes = require("./routes/CategoryRoutes");
 const resturantRoutes = require("./routes/resturantRoutes");

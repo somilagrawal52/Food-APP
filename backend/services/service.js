@@ -1,14 +1,14 @@
 const jwt = require("jsonwebtoken");
-const secret = process.env.JWT_SECRET;
+
+function getSecret() {
+  return process.env.JWT_SECRET || "plateful_jwt_secret_secure_key_2026";
+}
 
 function createToken(user) {
   try {
     const payload = { id: user._id, email: user.email };
-    if (!secret) {
-      console.error("JWT secret is not set");
-      return null;
-    }
-    return jwt.sign(payload, secret, { expiresIn: "1d" });
+    const secret = getSecret();
+    return jwt.sign(payload, secret, { expiresIn: "7d" });
   } catch (error) {
     console.error("Error creating token:", error);
     return null;
@@ -17,13 +17,10 @@ function createToken(user) {
 
 function validate(token) {
   try {
-    if (!secret) {
-      throw new Error("JWT secret is not set");
-    }
+    const secret = getSecret();
     return jwt.verify(token, secret);
   } catch (error) {
     console.error("Error validating token:", error);
-    // return null to allow callers to treat invalid token without crashing
     return null;
   }
 }

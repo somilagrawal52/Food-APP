@@ -18,7 +18,7 @@ export function RestaurantCard({ restaurant }) {
         <div className="between" style={{ marginBottom: "var(--space-xs)" }}>
           <h3 style={{ fontSize: "var(--text-xl)" }}>{restaurant.title}</h3>
           <div className="rating-badge">
-            <span style={{ fontSize: "14px" }}>*</span>
+            <span style={{ fontSize: "14px", color: "var(--color-accent-amber, #fbbf24)" }}>★</span>
             <span>{rating}</span>
           </div>
         </div>

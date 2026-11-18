@@ -4,6 +4,7 @@ export function getCart() {
 
 export function setCart(cart) {
   localStorage.setItem("plateful_cart", JSON.stringify(cart));
+  window.dispatchEvent(new Event("plateful:storage"));
 }
 
 export function getFavorites() {
@@ -27,6 +28,7 @@ export function toggleFavorite(food) {
         ...favorites
       ].slice(0, 12);
   localStorage.setItem("plateful_favorites", JSON.stringify(next));
+  window.dispatchEvent(new Event("plateful:storage"));
   return !exists;
 }
 
